@@ -6,6 +6,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 public class PortMain {
 	
 	private static int size=Integer.MAX_VALUE;
@@ -16,6 +18,7 @@ public class PortMain {
 	private static int maxUnloadTime = 90;
 	private static int count=100;
 	private static List<Boat> boats = new ArrayList<>();
+	private static final Logger logger = Logger.getLogger(PortMain.class);
 
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
@@ -74,29 +77,35 @@ public class PortMain {
 			System.out.println("请输入模拟的船数量，默认为100艘...");
 			int ou7 = processInput(scanner, "输入有误，请再次输入此次模拟的船数量，默认为100艘..");
 			if(ou7!=0) count=ou7;
+			System.out.println();
 			process(count);
 		}
 		
 	}
 
 	public static void process(int count) {
+	    	
+	    	boats.clear();
+	    	
+	    	logger.info("Start to run Application with "+count+" ships");
 		Port port = new Port(machineCount, size);
 		int leftBoat=count;
-		int totalTime=0;
+		int totalTime=1;
 		
 		while(leftBoat>0) {
-			int time=0;
+			int time=1;
 			
 			Boat newBoat = new Boat();
 			newBoat.setArriveInterval(Units.randomEquidistribution(minArriveTime, maxArriveTime));
 			newBoat.setUnloadTime(Units.randomEquidistribution(minUnloadTime, maxUnloadTime));
+			
+			System.out.println("第"+(count-leftBoat+1)+"艘船的到达间隔为"+newBoat.arriveInterval+"分钟,所需要的卸货时间为"+newBoat.unloadTime+"分钟");
 			boats.add(newBoat);
 			
 			boolean doesArrive =false;
 			while(!doesArrive) {
 				if(newBoat.getArriveInterval()<=time) {
 					doesArrive=true;
-					newBoat.setWaitTime(time);
 					if(port.enchase(newBoat)==false)
 						newBoat.setSucess(false);
 				}
@@ -106,6 +115,12 @@ public class PortMain {
 			}
 			leftBoat--;
 		}
+		
+		while(port.isWork()){
+		    port.workOneMin();
+		}
+		
+		
 		int waitTotal=0;
 		int successCount=0;
 		int waitMax=0;
@@ -119,19 +134,22 @@ public class PortMain {
 			else {
 				waitTotal+=boat.waitTime;
 				waitMax = Math.max(waitMax, boat.waitTime);
-				successCount++;
 				stayTotal+=boat.waitTime+boat.unloadTime;
 				stayMax=Math.max(stayMax, boat.waitTime+boat.unloadTime);
+				successCount++;
 			}
 		}
-		System.out.println("一艘船待在港口的平均时间为"+stayTotal/successCount+"分钟");
+		System.out.println("一艘船待在港口的平均时间为"+(stayTotal*1.0)/successCount+"分钟");
 		System.out.println("一艘船待在港口的最长时间"+stayMax+"分钟");
-		System.out.println("一艘船的平均等待时间"+waitTotal/successCount+"分钟");
+		System.out.println("一艘船的平均等待时间"+(waitTotal*1.0)/successCount+"分钟");
 		System.out.println("一艘船的最长等待时间"+waitMax+"分钟");
 		
 		for(int i=0;i<port.machines.size();i++) {
 			Machine machine = port.machines.get(i);
-			double res= machine.freeCount/(machine.freeCount+machine.workCount);
+			int freeInt = machine.freeCount+1;
+			int workInt = machine.workCount;
+			System.out.println("total free time is "+freeInt+" ; total work time is "+workInt); 
+			double res= (freeInt*1.0)/(workInt+freeInt);
 			System.out.println("第"+(i+1)+"个卸货设备的空闲时间的百分比为"+res);
 		}
 		
@@ -158,6 +176,7 @@ public class PortMain {
 				mark = true;
 			}
 		}
+		System.out.println();
 		return res;
 	}
 

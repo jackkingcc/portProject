@@ -4,7 +4,7 @@ public class Boat {
 
 	public int arriveInterval; //mins
 	public int unloadTime;
-	public int waitTime;
+	public int waitTime=0;
 	private boolean sucess=true;
 
 	

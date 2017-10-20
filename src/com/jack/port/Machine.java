@@ -41,6 +41,7 @@ public class Machine {
 	public void setWorkingBoat(Boat workingBoat) {
 		this.workingBoat = workingBoat;
 		isWorking=true;
+		workingTime=0;
 	}
 	
 	

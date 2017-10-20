@@ -47,11 +47,24 @@ public class Port {
 				curMachine.setWorkingBoat(boats.get(0));
 				boats.remove(0);
 				logger.info("One boat starting to unload...");
+			}else if(i==machineCount-1 && !boats.isEmpty() && curMachine.isWorking()){  //add wait time when it can't be put into last  machine
+			    for(Boat boat:boats){
+				boat.setWaitTime(boat.getWaitTime()+1);
+			    }
 			}
 			logger.info("Start to work on Machine " + i+", its working status is "+curMachine.isWorking()+". Current there are "+boats.size()+ " waiting boats");
 			curMachine.workOneMin();
 		}
 
+	}
+	
+	public boolean isWork(){
+	    boolean res=false;
+	    for(Machine machine:machines){
+		if(machine.isWorking()) return true;
+	    }
+	    if(!boats.isEmpty()) res=true;
+	    return res;
 	}
 
 }
